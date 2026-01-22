@@ -1,0 +1,51 @@
+# 📝 Отчёт по эксперименту: {{ summary.model_name }}
+
+## 📋 Параметры задачи
+
+* **Задача:** `{{ config.task.name if config.task else 'N/A' }}`
+* **Датасет:** `{{ config.dataset.path if config.dataset else 'N/A' }}`
+* **Промпт:** `{{ config.prompt.path if config.prompt else 'N/A' }}`
+* **Всего образцов:** {{ summary.total_samples }}
+
+## 🤖 Параметры модели
+
+{% if config.model -%}
+{% for key, value in config.model.items() -%}
+* **{{ key }}:** `{{ value }}`
+{% endfor %}
+{%- endif %}
+
+## 📊 Итоговые метрики (Summary)
+
+| Метрика | Среднее | Медиана | p95 | p99 |
+|---------|---------|---------|-----|-----|
+{% for name, stats in summary.metrics.items() -%}
+| {{ name }} | {{ "%.4f"|format(stats.mean) }} | {{ "%.4f"|format(stats.median) }} | {{ "%.4f"|format(stats.p95) }} | {{ "%.4f"|format(stats.p99) }} |
+{% endfor %}
+
+## 📈 Детальные метрики
+
+{% if summary.detailed_metrics -%}
+| Категория | Accuracy | Latency (avg) |
+|-----------|----------|---------------|
+{% for cat, stats in summary.detailed_metrics.items() -%}
+| {{ cat }} | {{ "%.4f"|format(stats.accuracy) }} | {{ "%.2f"|format(stats.latency) }}ms |
+{% endfor %}
+{% else -%}
+*Детальные метрики отсутствуют.*
+{%- endif %}
+
+## ❌ Ошибки и аномалии
+
+{% if summary.errors -%}
+| ID | Ошибка | Предсказание | Ожидалось |
+|----|--------|--------------|-----------|
+{% for err in summary.errors[:5] -%}
+| {{ err.id }} | {{ err.error_type }} | {{ err.prediction }} | {{ err.ground_truth }} |
+{% endfor %}
+{% else -%}
+*Ошибок не обнаружено.*
+{%- endif %}
+
+---
+*Отчёт сгенерирован автоматически VLMHyperBench Reporting Engine.*
